@@ -3,19 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Kurs React</title>
-    <script
-      src="https://unpkg.com/react@16/umd/react.development.js"
-      crossorigin
-    ></script>
-    <script
-      src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"
-      crossorigin
-    ></script>
+    <title>Kurs React - Homework</title>
     <meta name="description" content="" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="" />
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
       .App {
         font-family: sans-serif;
@@ -54,6 +45,7 @@
         padding: 5px;
         margin-bottom: 20px;
         height: 100%;
+        transform: rotate(180deg);
       }
 
       .ProgressBar > div {
@@ -78,7 +70,6 @@
       <div class="Timebox">
         <h1>Uczę się skrótów klawiszowych</h1>
         <h2 class="Clock">Pozostało 13:28</h2>
-        <div id="root"></div>
         <div class="ProgressBar">
           <div id="mainProgressBar" style="width: 8%"></div>
         </div>
@@ -88,59 +79,11 @@
         Liczba przerw: 2
       </div>
     </div>
-    <script type="text/babel">
-      function Clock({
-        hours = 73,
-        minutes = 99,
-        seconds = 999,
-        miliseconds = 3333
-      }) {
-        return (
-          <h2 className="Clock">
-            Pozostało {formatTime(hours, minutes, seconds, miliseconds)}
-          </h2>
-        );
-      }
-
-      function formatTime(hours, minutes, seconds, miliseconds) {
-        const formatedHours =
-          hours < 0
-            ? (hours = "0")
-            : hours < 10
-            ? "0" + hours.toString()
-            : hours;
-        const formatedMinutes =
-          minutes < 0
-            ? (minutes = "00")
-            : minutes < 10
-            ? "0" + minutes.toString()
-            : minutes > 59
-            ? (minutes = "59")
-            : minutes;
-        const formatedSeconds =
-          seconds < 0
-            ? (seconds = "00")
-            : seconds < 10
-            ? "0" + seconds.toString()
-            : seconds > 59
-            ? (seconds = "59")
-            : seconds;
-
-        const formatedMiliseconds =
-          miliseconds < 0
-            ? (miliseconds = "000")
-            : miliseconds < 10
-            ? (miliseconds = "00" + miliseconds.toString())
-            : miliseconds < 100
-            ? (miliseconds = "0" + miliseconds.toString())
-            : miliseconds > 1000
-            ? (miliseconds = "999")
-            : miliseconds;
-
-        return `${formatedHours}:${formatedMinutes}:${formatedSeconds}.${formatedMiliseconds}`;
-      }
-
-      ReactDOM.render(<Clock />, document.getElementById("root"));
+    <script>
+      var ProgressBar = document.getElementById("mainProgressBar");
+      var currentWidth = parseInt(ProgressBar.style.width, 10);
+      var finalWidth = 100 - currentWidth;
+      ProgressBar.style.width = finalWidth + "%";
     </script>
   </body>
 </html>
