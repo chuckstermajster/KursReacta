@@ -60,87 +60,187 @@
         height: 20px;
         background-color: red;
       }
+
+      .inactive {
+        filter: blur(2px) grayscale(1);
+      }
     </style>
   </head>
   <body>
     <h1>Kurs Reacta - Tydzień 2</h1>
     <hr />
-    <div class="App">
-      <div class="TimeboxEditor">
-        <label
-          >Co robisz?<input
-            type="text"
-            value="Uczę się skrótów klawiszowych"/></label
-        ><br /><label>Ile minut?<input type="number" value="25"/></label><br />
-        <button>Zacznij</button>
-      </div>
+    <div id="root"></div>
+  </body>
 
-      <div class="Timebox">
-        <h1>Uczę się skrótów klawiszowych</h1>
-        <h2 class="Clock">Pozostało 13:28</h2>
-        <div id="root"></div>
-        <div class="ProgressBar">
-          <div id="mainProgressBar" style="width: 8%"></div>
+  <script type="text/babel">
+    function TimeboxEditor() {
+      return (
+        <div className="TimeboxEditor inactive">
+          <label>
+            Co robisz?{" "}
+            <input disabled value="Uczę się skrótów klawiszowych" type="text" />
+          </label>
+          <br />
+          <label>
+            Ile minut? <input disabled value="25" type="number" />
+          </label>
+          <br />
+          <button disabled>Zacznij</button>
         </div>
-        <button>start</button>
-        <button>stop</button>
-        <button>pauzuj</button>
-        Liczba przerw: 2
-      </div>
-    </div>
-    <script type="text/babel">
-      function Clock({
-        hours = 73,
-        minutes = 99,
-        seconds = 999,
-        miliseconds = 3333
-      }) {
+      );
+    }
+
+    class Timebox extends React.Component {
+      constructor(props) {
+        super(props);
+        this.state = {
+          isRunning: false,
+          isPaused: false,
+          pausesCount: 0,
+          elapsedTimeinSeconds: 0
+        };
+        this.handleStart = this.handleStart.bind(this);
+        this.handleStop = this.handleStop.bind(this);
+        this.togglePause = this.togglePause.bind(this);
+      }
+      handleStart() {
+        this.setState({
+          isRunning: true
+        });
+        this.startTimer();
+      }
+      handleStop() {
+        this.setState({
+          isRunning: false,
+          isPaused: false,
+          pausesCount: 0,
+          elapsedTimeinSeconds: 0
+        });
+        this.stopTimer();
+      }
+
+      startTimer() {
+        this.intervalId = window.setInterval(() => {
+          this.setState(prevState => ({
+            elapsedTimeinSeconds: prevState.elapsedTimeinSeconds + 0.1
+          }));
+        }, 100);
+      }
+
+      stopTimer() {
+        window.clearInterval(this.intervalId);
+      }
+
+      togglePause() {
+        this.setState(function(prevState) {
+          const isPaused = !prevState.isPaused;
+          return {
+            isPaused,
+            pausesCount: isPaused
+              ? prevState.pausesCount + 1
+              : prevState.pausesCount
+          };
+        });
+      }
+      render() {
+        const {
+          isPaused,
+          isRunning,
+          pausesCount,
+          elapsedTimeinSeconds
+        } = this.state;
+        const totalTimeInSeconds = 43;
+        const timeLeftInSeconds = totalTimeInSeconds - elapsedTimeinSeconds;
+        const minutesLeft = Math.floor(timeLeftInSeconds / 60);
+        const secondsLeft = Math.floor(timeLeftInSeconds % 60);
+        const progressInPercent =
+          (elapsedTimeinSeconds / totalTimeInSeconds) * 100.0;
+
         return (
-          <h2 className="Clock">
-            Pozostało {formatTime(hours, minutes, seconds, miliseconds)}
-          </h2>
+          <div className="Timebox">
+            <h1>Uczę się skrótów klawiszowych</h1>
+            <Clock
+              minutes={minutesLeft}
+              seconds={secondsLeft}
+              className={isPaused ? "inactive" : ""}
+            />
+            <ProgressBar
+              percent={progressInPercent}
+              className={isPaused ? "inactive" : ""}
+            />
+            <button onClick={this.handleStart} disabled={isRunning}>
+              Start
+            </button>
+            <button onClick={this.handleStop} disabled={!isRunning}>
+              Stop
+            </button>
+            <button onClick={this.togglePause} disabled={!isRunning}>
+              {isPaused ? "Wznów" : "Pauzuj"}
+            </button>
+            Liczba przerw: {pausesCount}
+          </div>
         );
       }
+    }
+    function Clock({ hours = 0, minutes, seconds, miliseconds = 0 }) {
+      return (
+        <h2 className="Clock">
+          Pozostało {formatTime(hours, minutes, seconds, miliseconds)}
+        </h2>
+      );
+    }
 
-      function formatTime(hours, minutes, seconds, miliseconds) {
-        const formatedHours =
-          hours < 0
-            ? (hours = "0")
-            : hours < 10
-            ? "0" + hours.toString()
-            : hours;
-        const formatedMinutes =
-          minutes < 0
-            ? (minutes = "00")
-            : minutes < 10
-            ? "0" + minutes.toString()
-            : minutes > 59
-            ? (minutes = "59")
-            : minutes;
-        const formatedSeconds =
-          seconds < 0
-            ? (seconds = "00")
-            : seconds < 10
-            ? "0" + seconds.toString()
-            : seconds > 59
-            ? (seconds = "59")
-            : seconds;
+    function ProgressBar({ className = "", percent }) {
+      return (
+        <div className={"ProgressBar " + className}>
+          <div style={{ width: `${percent}%` }} />
+        </div>
+      );
+    }
 
-        const formatedMiliseconds =
-          miliseconds < 0
-            ? (miliseconds = "000")
-            : miliseconds < 10
-            ? (miliseconds = "00" + miliseconds.toString())
-            : miliseconds < 100
-            ? (miliseconds = "0" + miliseconds.toString())
-            : miliseconds > 1000
-            ? (miliseconds = "999")
-            : miliseconds;
+    function formatTime(hours, minutes, seconds, miliseconds) {
+      const formatedHours =
+        hours < 0 ? (hours = "0") : hours < 10 ? "0" + hours.toString() : hours;
+      const formatedMinutes =
+        minutes < 0
+          ? (minutes = "00")
+          : minutes < 10
+          ? "0" + minutes.toString()
+          : minutes > 59
+          ? (minutes = "59")
+          : minutes;
+      const formatedSeconds =
+        seconds < 0
+          ? (seconds = "00")
+          : seconds < 10
+          ? "0" + seconds.toString()
+          : seconds > 59
+          ? (seconds = "59")
+          : seconds;
 
-        return `${formatedHours}:${formatedMinutes}:${formatedSeconds}.${formatedMiliseconds}`;
-      }
+      const formatedMiliseconds =
+        miliseconds < 0
+          ? (miliseconds = "000")
+          : miliseconds < 10
+          ? (miliseconds = "00" + miliseconds.toString())
+          : miliseconds < 100
+          ? (miliseconds = "0" + miliseconds.toString())
+          : miliseconds > 1000
+          ? (miliseconds = "999")
+          : miliseconds;
 
-      ReactDOM.render(<Clock />, document.getElementById("root"));
-    </script>
-  </body>
+      return `${formatedHours}:${formatedMinutes}:${formatedSeconds}.${formatedMiliseconds}`;
+    }
+
+    function App() {
+      return (
+        <div className="App">
+          <TimeboxEditor />
+          <Timebox />
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById("root"));
+  </script>
 </html>
